@@ -29,6 +29,7 @@ import io.temporal.api.history.v1.WorkflowExecutionStartedEventAttributes;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
+import io.temporal.common.SearchAttributes;
 import io.temporal.common.WorkflowExecutionHistory;
 import io.temporal.internal.common.ProtobufTimeUtils;
 import io.temporal.testing.internal.SDKTestOptions;
@@ -214,6 +215,21 @@ public class StartTest {
     Assert.assertEquals("1234", stubP4.query());
     Assert.assertEquals("12345", stubP5.query());
     Assert.assertEquals("123456", stubP6.query());
+  }
+
+  @Test
+  public void startNoArgFuncWithEmptySearchAttribute() {
+    WorkflowOptions workflowOptions =
+        SDKTestOptions.newWorkflowOptionsWithTimeouts(testWorkflowRule.getTaskQueue()).toBuilder()
+            .setTypedSearchAttributes(SearchAttributes.EMPTY)
+            .build();
+
+    TestNoArgsWorkflowProc stubP =
+        testWorkflowRule
+            .getWorkflowClient()
+            .newWorkflowStub(TestNoArgsWorkflowProc.class, workflowOptions);
+    waitForProc(WorkflowClient.start(stubP::proc));
+    Assert.assertEquals("proc", stubP.query());
   }
 
   private void assertResult(String expected, WorkflowExecution execution) {
